@@ -1,24 +1,10 @@
 """
     Program: p1.py
     Author: Khann Mean
+    Date: 2019-04-02
     Searches deep inside a directory structure, looking for duplicate file.
     Duplicates aka copies have the same content, but not necessarily the same name.
 """
-
-# loop thru the file list
-# compare index to the next index test to see if you are at the end 0 to 9-1
-# skip last item in the list
-# if file is dupe then add the file to a dupe list for the current index file
-# once the dupe is found create a list and add it to the dupe list
-
-# calculate the files with the most dupes
-# init max files dupe count to 0
-# init max file dupe name to empty string
-# loop thru the dupe list find the length of the duple list and make it the max value
-# get dupe file count for current item
-# if get greater than max
-# set it as a new max
-# set the file name as the new dupe max
 
 import p1utils
 import time
@@ -26,7 +12,16 @@ import os
 
 
 def search(file_list):
-    """Looking for duplicate files"""
+    """
+    Search a file list to identify the duplicates in the file list.
+
+    Parameters:
+    file_list (list): The list of files from a directory.
+
+    Returns:
+    list: returns a dictionary list of the duplicate files
+
+    """
 
     count = 0
     file_list_dict = {}
@@ -51,16 +46,63 @@ def search(file_list):
 
     return file_list_dict
 
-
 def faster_search(file_list):
-    """Looking for duplicate files"""
+    """
+    A faster search using pre-calculated hashes to identify the duplicates in the file list.
+
+    Parameters:
+    file_list (list): The list of files from a directory.
+
+    Returns:
+    list: returns a dictionary list of the duplicate files
+
+    """
+
+    count = 0
+    file_list_hash = {}
     file_list_dict = {}
+    dupelist = []
+
+    # sort the file list
+    file_list.sort()
+
+    for filename in file_list:
+        # create a list of file hashes from the files and store them
+        file_list_hash[filename] = p1utils.hash_file(filename)
+
+    # loop through the file list and look for duplicates
+    for file1 in file_list:
+        count = count + 1
+        dupelist.clear()
+        # compare to all files except itself and the last file in the list
+        for file2index in range(count, len(file_list) - 1):
+            file2 = file_list[file2index]
+            # if the pre-calculated file hash values are the same
+            if (file_list_hash[file1] == file_list_hash[file2]):
+                # found a duplicate, add into a list
+                dupelist.append(file2)
+
+        # store the duplicate file list into the dictionary
+        file_list_dict[file1] = dupelist.copy()
+
 
     return file_list_dict
 
 
 def report(file_list_dict):
-    """ report search results"""
+    """
+    Report the results from search and display the list of duplicates and the list of duplicates
+    that take up the most space.
+
+    Parameters:
+    file_list (list): The list of files from a directory.
+
+    Returns:
+    None.
+
+    """
+
+    # Return a error message if the diction is empty
     if not file_list_dict:
         print("Error: Empty file dictionary found.")
         return
@@ -89,6 +131,7 @@ def report(file_list_dict):
             maxsizefilename = filename
             maxsizetotalspace = filesize * filedupecount
 
+    # display the list of duplicate files
     print("The file with the most duplicates is:")
     print(str(maxdupefilename))
     print("Here are its " + str(maxdupecount) + " copies:")
@@ -96,6 +139,7 @@ def report(file_list_dict):
     for filename in filedupelist:
         print(str(filename))
 
+    # display the list of files that take up the most space.
     print("")
     print("The most disk space (" + str(maxsizetotalspace) + ") could be recovered, by deleting copies of this file:")
     print(maxsizefilename)
@@ -122,4 +166,4 @@ print("Runtime: {:.2f} secs".format(time.time() - t0))
 print(" .. and now w/ a faster search implementation:")
 t0 = time.time()
 report(faster_search(files))
-print("Runtime:{:.2f} secs".format(time.time() - t0))
+print("Runtime: {:.2f} secs".format(time.time() - t0))
